@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { RequireAuth } from "@/components/auth/require-auth";
 import { getApiErrorMessage } from "@/lib/api";
+import { TripStopsPanel } from "@/components/planning/trip-stops-panel";
 import {
   deleteTrip,
   formatTripDates,
@@ -376,6 +377,12 @@ function TripDetailsContent() {
                 )}
               </div>
             </div>
+
+            <TripStopsPanel
+              tripId={trip.id}
+              defaultArrival={trip.startDate}
+              defaultDeparture={trip.endDate}
+            />
           </>
         )}
       </section>

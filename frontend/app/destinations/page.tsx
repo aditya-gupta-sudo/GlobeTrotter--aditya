@@ -31,7 +31,7 @@ const destinations = [
     name: "Iceland",
     country: "Europe",
     image:
-      "https://images.unsplash.com/photo-1504829857797-ddff29c27927?auto=format&fit=crop&w=1600&q=85",
+      "https://images.travelandleisureasia.com/wp-content/uploads/sites/3/2024/02/12190030/Kirkjufell-1600x900.jpg",
   },
   {
     name: "New Zealand",

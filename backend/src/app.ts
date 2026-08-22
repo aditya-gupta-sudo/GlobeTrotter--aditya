@@ -10,6 +10,7 @@ import cityRoutes from "./routes/city.routes";
 import activityRoutes, {
   stopActivityRouter,
 } from "./routes/activity.routes";
+import budgetRoutes from "./routes/budget.routes";
 
 const app = express();
 
@@ -26,5 +27,6 @@ app.use("/api/stops", tripStopRouter);
 app.use("/api/stops", stopActivityRouter);
 app.use("/api/cities", cityRoutes);
 app.use("/api/activities", activityRoutes);
+app.use("/api/budget", budgetRoutes);
 
 export default app;

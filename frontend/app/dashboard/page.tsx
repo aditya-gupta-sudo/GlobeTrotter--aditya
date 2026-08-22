@@ -1,12 +1,50 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Compass, LogOut } from "lucide-react";
 import { RequireAuth } from "@/components/auth/require-auth";
 import { useAuth } from "@/lib/auth-context";
+import { getApiErrorMessage } from "@/lib/api";
+import {
+  formatTripDates,
+  getTripStatus,
+  listTrips,
+  type Trip,
+} from "@/lib/trips";
 
 function DashboardContent() {
   const { user, logout } = useAuth();
+  const [trips, setTrips] = useState<Trip[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      setError("");
+
+      try {
+        const rows = await listTrips();
+        setTrips(rows);
+      } catch (err) {
+        setTrips([]);
+        setError(getApiErrorMessage(err));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void load();
+  }, []);
+
+  const upcomingTrips = useMemo(
+    () =>
+      trips.filter((trip) => getTripStatus(trip.startDate, trip.endDate) !== "Completed"),
+    [trips]
+  );
+
+  const completedCount = trips.length - upcomingTrips.length;
 
   return (
     <main className="min-h-screen bg-[#f5f9fd] text-slate-900">
@@ -43,6 +81,31 @@ function DashboardContent() {
           You are signed in as {user?.email}.
         </p>
 
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              All trips
+            </p>
+            <p className="mt-2 text-3xl font-black">{isLoading ? "—" : trips.length}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Upcoming
+            </p>
+            <p className="mt-2 text-3xl font-black">
+              {isLoading ? "—" : upcomingTrips.length}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              Completed
+            </p>
+            <p className="mt-2 text-3xl font-black">{isLoading ? "—" : completedCount}</p>
+          </div>
+        </div>
+
+        {error && <p className="mt-4 text-sm font-medium text-red-600">{error}</p>}
+
         <div className="mt-10 grid gap-4 sm:grid-cols-2">
           <Link
             href="/plan-trip"
@@ -69,11 +132,39 @@ function DashboardContent() {
             Budget
           </Link>
           <Link
+            href="/calendar"
+            className="rounded-2xl border border-slate-200 bg-white p-6 font-semibold shadow-sm transition hover:-translate-y-0.5 hover:border-[#079bc2]"
+          >
+            Calendar
+          </Link>
+          <Link
             href="/profile"
-            className="rounded-2xl border border-slate-200 bg-white p-6 font-semibold shadow-sm transition hover:-translate-y-0.5 hover:border-[#079bc2] sm:col-span-2"
+            className="rounded-2xl border border-slate-200 bg-white p-6 font-semibold shadow-sm transition hover:-translate-y-0.5 hover:border-[#079bc2]"
           >
             Profile
           </Link>
+        </div>
+
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold">Upcoming trips</h2>
+          {isLoading && <p className="mt-3 text-sm text-slate-500">Loading trips...</p>}
+          {!isLoading && !error && upcomingTrips.length === 0 && (
+            <p className="mt-3 text-sm text-slate-500">No upcoming trips yet.</p>
+          )}
+          <div className="mt-4 space-y-3">
+            {upcomingTrips.map((trip) => (
+              <Link
+                key={trip.id}
+                href={`/trips/${trip.id}`}
+                className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 transition hover:border-[#079bc2]"
+              >
+                <span className="font-semibold">{trip.title}</span>
+                <span className="text-sm text-[#079bc2]">
+                  {formatTripDates(trip.startDate, trip.endDate)}
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </main>

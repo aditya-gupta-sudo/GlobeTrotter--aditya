@@ -31,13 +31,6 @@ export default function LoginPage() {
 
     setError("");
 
-    /*
-     * Basic frontend validation.
-     *
-     * Later we can replace this with your actual backend
-     * authentication.
-     */
-
     if (!email.trim()) {
       setError("Please enter your email address.");
       return;
@@ -48,23 +41,9 @@ export default function LoginPage() {
       return;
     }
 
-    /*
-     * Store login state.
-     *
-     * This allows protected pages such as /plan-trip
-     * to know that the user has logged in.
-     */
     localStorage.setItem("globetroter_logged_in", "true");
-
-    /*
-     * Store the user's email so we can use it later
-     * on the account/dashboard pages.
-     */
     localStorage.setItem("globetroter_user_email", email);
 
-    /*
-     * Send the user to the Create a New Trip page.
-     */
     router.push("/plan-trip");
   };
 
@@ -83,7 +62,6 @@ export default function LoginPage() {
               "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=95')",
           }}
         >
-
           {/* Main black cinematic overlay */}
           <div className="absolute inset-0 bg-black/30" />
 
@@ -102,12 +80,9 @@ export default function LoginPage() {
 
           <div className="relative z-10 flex min-h-screen flex-col p-10 xl:p-14">
 
-            {/* ===================================================
-                LOGO
-            =================================================== */}
+            {/* LOGO */}
 
             <div className="flex items-center gap-3 text-white">
-
               <div className="flex h-11 w-11 items-center justify-center rounded-full bg-white/20 backdrop-blur-md">
                 <Compass className="h-6 w-6 text-white" />
               </div>
@@ -115,35 +90,26 @@ export default function LoginPage() {
               <span className="text-xl font-bold tracking-tight">
                 Globe<span className="text-[#38bdf8]">Trotter</span>
               </span>
-
             </div>
 
-
-            {/* ===================================================
-                HERO CONTENT
-            =================================================== */}
+            {/* HERO CONTENT */}
 
             <div className="flex flex-1 items-center">
-
               <div className="w-full max-w-xl">
 
                 {/* Small heading */}
 
                 <div className="mb-5 flex items-center gap-3">
-
                   <div className="h-[2px] w-10 bg-[#38bdf8]" />
 
                   <span className="text-sm font-semibold uppercase tracking-[0.22em] text-white/85">
                     Your next adventure
                   </span>
-
                 </div>
-
 
                 {/* Main heading */}
 
                 <h1 className="text-5xl font-black leading-[1.02] tracking-tight text-white xl:text-6xl">
-
                   The world is
 
                   <br />
@@ -151,9 +117,7 @@ export default function LoginPage() {
                   <span className="text-[#38bdf8]">
                     waiting.
                   </span>
-
                 </h1>
-
 
                 {/* Description */}
 
@@ -162,16 +126,11 @@ export default function LoginPage() {
                   itinerary, and make every journey count.
                 </p>
 
-
-                {/* =================================================
-                    DESTINATION CARDS
-                ================================================= */}
+                {/* DESTINATION CARDS */}
 
                 <div className="relative mt-12 h-64">
 
-                  {/* =================================================
-                      MOUNTAIN PHOTO
-                  ================================================= */}
+                  {/* MOUNTAIN PHOTO */}
 
                   <div
                     className="
@@ -194,33 +153,21 @@ export default function LoginPage() {
                       hover:scale-105
                     "
                   >
-
                     <img
                       src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=95"
                       alt="Mountain destination"
                       className="h-full w-full object-cover"
                     />
 
-                    {/* Dark bottom gradient */}
-
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent" />
 
-                    {/* Location */}
-
                     <div className="absolute bottom-4 left-4 flex items-center gap-2 text-sm font-semibold text-white">
-
                       <MapPin className="h-4 w-4" />
-
                       Explore the world
-
                     </div>
-
                   </div>
 
-
-                  {/* =================================================
-                      BEACH PHOTO
-                  ================================================= */}
+                  {/* BEACH PHOTO */}
 
                   <div
                     className="
@@ -243,23 +190,16 @@ export default function LoginPage() {
                       hover:scale-105
                     "
                   >
-
                     <img
                       src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1000&q=95"
                       alt="Beach destination"
                       className="h-full w-full object-cover"
                     />
 
-                    {/* Slight overlay */}
-
                     <div className="absolute inset-0 bg-black/5" />
-
                   </div>
 
-
-                  {/* =================================================
-                      NEXT DESTINATION CARD
-                  ================================================= */}
+                  {/* NEXT DESTINATION CARD */}
 
                   <div
                     className="
@@ -277,59 +217,39 @@ export default function LoginPage() {
                       backdrop-blur-xl
                     "
                   >
-
                     <p className="text-[11px] font-medium uppercase tracking-wide text-white/60">
                       Next destination
                     </p>
 
                     <div className="mt-1 flex items-center gap-3">
-
                       <span className="font-semibold text-white">
                         Somewhere beautiful
                       </span>
-
-                      {/* ✈️ AIRPLANE */}
 
                       <PlaneTakeoff
                         className="h-5 w-5 text-[#38bdf8]"
                         strokeWidth={2.5}
                       />
-
                     </div>
-
                   </div>
-
                 </div>
-
               </div>
-
             </div>
 
-
-            {/* ===================================================
-                LEFT FOOTER
-            =================================================== */}
+            {/* LEFT FOOTER */}
 
             <div className="flex items-center justify-between text-sm text-white/65">
-
               <span>
                 Plan smarter. Travel farther.
               </span>
 
               <span className="flex items-center gap-2">
-
                 <Sparkles className="h-4 w-4" />
-
                 Made for explorers
-
               </span>
-
             </div>
-
           </div>
-
         </section>
-
 
         {/* =========================================================
             RIGHT SIDE — LOGIN
@@ -339,32 +259,51 @@ export default function LoginPage() {
 
           <div className="w-full max-w-[480px]">
 
-            {/* ===================================================
-                MOBILE LOGO
-            =================================================== */}
+            {/* MOBILE LOGO */}
 
             <div className="mb-12 flex items-center gap-3 lg:hidden">
 
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#079bc2] text-white">
-
                 <Compass className="h-5 w-5" />
-
               </div>
 
               <span className="text-xl font-bold text-slate-900">
-
                 Globe<span className="text-[#079bc2]">
                   Trotter
                 </span>
-
               </span>
 
             </div>
 
+            {/* =====================================================
+                BACK TO HOME
+            ===================================================== */}
 
-            {/* ===================================================
+            <div className="mb-8">
+
+              <Link
+                href="/"
+                className="
+                  inline-flex
+                  items-center
+                  gap-2
+                  text-sm
+                  font-semibold
+                  text-[#079bc2]
+                  transition-all
+                  duration-200
+                  hover:gap-3
+                  hover:underline
+                "
+              >
+                ← Back to Home
+              </Link>
+
+            </div>
+
+            {/* =====================================================
                 LOGIN HEADING
-            =================================================== */}
+            ===================================================== */}
 
             <div className="mb-9">
 
@@ -382,10 +321,9 @@ export default function LoginPage() {
 
             </div>
 
-
-            {/* ===================================================
+            {/* =====================================================
                 LOGIN FORM
-            =================================================== */}
+            ===================================================== */}
 
             <form
               onSubmit={handleLogin}
@@ -438,28 +376,16 @@ export default function LoginPage() {
 
               </div>
 
-
               {/* PASSWORD */}
 
               <div>
 
-                <div className="mb-2 flex items-center justify-between">
-
-                  <label
-                    htmlFor="password"
-                    className="text-sm font-semibold text-slate-800"
-                  >
-                    Password
-                  </label>
-
-                  <button
-                    type="button"
-                    className="text-sm font-semibold text-[#079bc2] hover:underline"
-                  >
-                    Forgot password?
-                  </button>
-
-                </div>
+                <label
+                  htmlFor="password"
+                  className="mb-2 block text-sm font-semibold text-slate-800"
+                >
+                  Password
+                </label>
 
                 <div className="relative">
 
@@ -525,7 +451,6 @@ export default function LoginPage() {
 
               </div>
 
-
               {/* ERROR MESSAGE */}
 
               {error && (
@@ -534,10 +459,7 @@ export default function LoginPage() {
                 </div>
               )}
 
-
-              {/* =================================================
-                  SIGN IN BUTTON
-              ================================================= */}
+              {/* SIGN IN BUTTON */}
 
               <button
                 type="submit"
@@ -580,10 +502,9 @@ export default function LoginPage() {
 
             </form>
 
-
-            {/* ===================================================
+            {/* =====================================================
                 OR DIVIDER
-            =================================================== */}
+            ===================================================== */}
 
             <div className="my-8 flex items-center gap-4">
 
@@ -597,10 +518,9 @@ export default function LoginPage() {
 
             </div>
 
-
-            {/* ===================================================
+            {/* =====================================================
                 CREATE ACCOUNT
-            =================================================== */}
+            ===================================================== */}
 
             <p className="text-center text-sm text-slate-500">
 
@@ -615,10 +535,9 @@ export default function LoginPage() {
 
             </p>
 
-
-            {/* ===================================================
+            {/* =====================================================
                 TERMS
-            =================================================== */}
+            ===================================================== */}
 
             <p className="mt-9 text-center text-xs leading-6 text-slate-400">
 

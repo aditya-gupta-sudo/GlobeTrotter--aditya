@@ -27,7 +27,7 @@ const places = [
     name: "Kyoto",
     location: "Japan",
     image:
-      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=85",
+      "https://assets.simplotel.com/simplotel/image/upload/w_3333,h_5000/x_0,y_1757,w_3333,h_1877,r_0,c_crop,q_80,fl_progressive/w_500,f_auto,c_fit/neemrana-hotels/a_beach_during_sunset_with_a_painted_sky_zbanml",
   },
   {
     name: "Bali",

@@ -7,6 +7,9 @@ import tripStopRouter, {
   tripNestedStopRouter,
 } from "./routes/tripStop.routes";
 import cityRoutes from "./routes/city.routes";
+import activityRoutes, {
+  stopActivityRouter,
+} from "./routes/activity.routes";
 
 const app = express();
 
@@ -20,6 +23,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/trips", tripNestedStopRouter);
 app.use("/api/trips", tripRoutes);
 app.use("/api/stops", tripStopRouter);
+app.use("/api/stops", stopActivityRouter);
 app.use("/api/cities", cityRoutes);
+app.use("/api/activities", activityRoutes);
 
 export default app;

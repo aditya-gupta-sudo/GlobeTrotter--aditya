@@ -19,7 +19,7 @@ const destinations = [
     name: "Greece",
     country: "Europe",
     image:
-      "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1600&q=85",
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTrbqZrKMLc1hFYX3r9o9l0h6k1rcyDTFYAWcVqFGB66sJntvVpa5in2D0&s=10",
   },
   {
     name: "Indonesia",

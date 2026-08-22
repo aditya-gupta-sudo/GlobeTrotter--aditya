@@ -13,7 +13,7 @@ const destinations = [
     name: "Switzerland",
     country: "Europe",
     image:
-      "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=1600&q=85",
+      "https://dhi-ue1-s3-b2b-rd-p-001.s3.amazonaws.com/_tenantnvm/blogImages/the-15-most-beautiful-places-in-switzerland/Zurich-switzerland-beautiful-places-to-visit-in-switzerland_1.jpg",
   },
   {
     name: "Greece",

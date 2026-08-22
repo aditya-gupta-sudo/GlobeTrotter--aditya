@@ -11,13 +11,7 @@ const destinations = [
     href: "/explore",
     icon: "⌕",
   },
-  {
-    title: "Destinations",
-    description:
-      "Find your next destination and explore what it has to offer.",
-    href: "/destinations",
-    icon: "◉",
-  },
+  
   {
     title: "Experiences",
     description:
@@ -148,9 +142,7 @@ export default function HomePage() {
               Explore
             </NavLink>
 
-            <NavLink href="/destinations">
-              Destinations
-            </NavLink>
+            
 
             <NavLink href="/experiences">
               Experiences

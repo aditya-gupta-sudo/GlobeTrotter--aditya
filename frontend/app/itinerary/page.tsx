@@ -1,17 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-
-type ItinerarySection = {
-  id: number;
-  title: string;
-  description: string;
-  dateRange: string;
-  budget: string;
-};
+import { RequireAuth } from "@/components/auth/require-auth";
+import { TripIdPrompt } from "@/components/planning/trip-id-prompt";
 
 export default function ItineraryPage() {
+<<<<<<< HEAD
   const router = useRouter();
 
   const [sections, setSections] = useState<ItinerarySection[]>([
@@ -264,5 +257,17 @@ export default function ItineraryPage() {
         </div>
       </section>
     </main>
+=======
+  return (
+    <RequireAuth>
+      <main className="min-h-screen bg-[#f5f9fd] text-[#142033]">
+        <TripIdPrompt
+          title="Itinerary"
+          description="Enter a trip ID to load its day-by-day itinerary from the server."
+          actionPath="/itinerary"
+        />
+      </main>
+    </RequireAuth>
+>>>>>>> cdd0e14a00c6e88fafbe1083f5d5ad4c5826d44f
   );
 }

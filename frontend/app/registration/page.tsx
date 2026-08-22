@@ -2,15 +2,32 @@
 
 import { useState, ChangeEvent, FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { GuestOnly } from "@/components/auth/guest-only";
+import { getApiErrorMessage } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 export default function RegistrationPage() {
+  return (
+    <GuestOnly>
+      <RegistrationForm />
+    </GuestOnly>
+  );
+}
+
+function RegistrationForm() {
+  const router = useRouter();
+  const { register } = useAuth();
+
   const [photo, setPhoto] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    password: "",
     phone: "",
     city: "",
     country: "",
@@ -45,13 +62,37 @@ export default function RegistrationPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError("");
 
-    setSubmitted(true);
+    const name = `${formData.firstName.trim()} ${formData.lastName.trim()}`.trim();
 
-    // Backend/database connection can be added here later.
-    console.log("Registration Data:", formData);
+    if (name.length < 3) {
+      setError("Name must contain at least 3 characters.");
+      return;
+    }
+
+    if (!formData.email.trim()) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must contain at least 6 characters.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      await register(name, formData.email.trim(), formData.password);
+      router.replace("/dashboard");
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -319,6 +360,28 @@ export default function RegistrationPage() {
               </div>
 
 
+              {/* PASSWORD */}
+
+              <div className="field">
+
+                <label htmlFor="password">
+                  Password
+                </label>
+
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="At least 6 characters"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  minLength={6}
+                />
+
+              </div>
+
+
               {/* PHONE */}
 
               <div className="field">
@@ -485,9 +548,10 @@ export default function RegistrationPage() {
               <button
                 type="submit"
                 className="register-button"
+                disabled={isSubmitting}
               >
                 <span>
-                  Create account
+                  {isSubmitting ? "Creating account..." : "Create account"}
                 </span>
 
                 <span className="arrow">
@@ -497,31 +561,15 @@ export default function RegistrationPage() {
 
             </div>
 
-
-            {/* =================================================
-                SUCCESS MESSAGE
-            ================================================= */}
-
-            {submitted && (
-              <div className="success-message">
-
-                <div className="success-icon">
-                  ✓
-                </div>
-
+            {error && (
+              <div className="success-message" style={{ background: "#fdecec", borderColor: "#f5c2c2", color: "#b42318" }}>
                 <div>
-                  <strong>
-                    You&apos;re ready to explore.
-                  </strong>
-
-                  <p>
-                    Your registration information has been
-                    received.
-                  </p>
+                  <strong>Could not create account.</strong>
+                  <p>{error}</p>
                 </div>
-
               </div>
             )}
+
 
           </form>
 

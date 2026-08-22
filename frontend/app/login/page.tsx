@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { GuestOnly } from "@/components/auth/guest-only";
+import { getApiErrorMessage } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 import {
   Compass,
@@ -17,7 +20,16 @@ import {
 } from "lucide-react";
 
 export default function LoginPage() {
+  return (
+    <GuestOnly>
+      <LoginForm />
+    </GuestOnly>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -25,8 +37,9 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError("");
@@ -41,10 +54,23 @@ export default function LoginPage() {
       return;
     }
 
+<<<<<<< HEAD
     localStorage.setItem("globetroter_logged_in", "true");
     localStorage.setItem("globetroter_user_email", email);
 
     router.push("/plan-trip");
+=======
+    setIsSubmitting(true);
+
+    try {
+      await login(email.trim(), password);
+      router.replace("/dashboard");
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
+>>>>>>> cdd0e14a00c6e88fafbe1083f5d5ad4c5826d44f
   };
 
   return (
@@ -463,6 +489,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="
                   group
                   flex
@@ -483,10 +510,12 @@ export default function LoginPage() {
                   hover:-translate-y-0.5
                   hover:bg-[#078eaf]
                   hover:shadow-xl
+                  disabled:cursor-not-allowed
+                  disabled:opacity-70
                 "
               >
 
-                Sign in
+                {isSubmitting ? "Signing in..." : "Sign in"}
 
                 <ArrowRight
                   className="

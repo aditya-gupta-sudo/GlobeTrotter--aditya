@@ -10,147 +10,117 @@ import {
   LogOut,
   Plus,
 } from "lucide-react";
-
-type Suggestion = {
-  title: string;
-  location: string;
-  type: string;
-  image: string;
-};
-
-const suggestions: Suggestion[] = [
-  {
-    title: "Explore the mountains",
-    location: "Swiss Alps",
-    type: "Nature",
-    image:
-      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    title: "Relax by the beach",
-    location: "Maldives",
-    type: "Beach",
-    image:
-      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    title: "Discover the city",
-    location: "Dubai",
-    type: "City",
-    image:
-      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    title: "Adventure awaits",
-    location: "New Zealand",
-    type: "Adventure",
-    image:
-      "https://images.unsplash.com/photo-1469521669194-babb45599def?auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    title: "Walk through history",
-    location: "Rome",
-    type: "Culture",
-    image:
-      "https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&fit=crop&w=1200&q=90",
-  },
-  {
-    title: "Experience the desert",
-    location: "Abu Dhabi",
-    type: "Adventure",
-    image:
-      "https://images.unsplash.com/photo-1473580044384-7ba9967e16a0?auto=format&fit=crop&w=1200&q=90",
-  },
-];
+import { RequireAuth } from "@/components/auth/require-auth";
+import { getApiErrorMessage } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { listCities, searchCities, type City } from "@/lib/cities";
+import { createTripStop } from "@/lib/stops";
+import { createTrip } from "@/lib/trips";
 
 export default function PlanTripPage() {
-  const router = useRouter();
+  return (
+    <RequireAuth>
+      <PlanTripContent />
+    </RequireAuth>
+  );
+}
 
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+function PlanTripContent() {
+  const router = useRouter();
+  const { logout } = useAuth();
 
   const [tripName, setTripName] = useState("");
-  const [place, setPlace] = useState("");
+  const [cityQuery, setCityQuery] = useState("");
+  const [cityId, setCityId] = useState("");
+  const [cities, setCities] = useState<City[]>([]);
+  const [citiesError, setCitiesError] = useState("");
+  const [citiesLoading, setCitiesLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem("globetroter_logged_in");
+    const loadCities = async () => {
+      setCitiesLoading(true);
+      setCitiesError("");
 
-    if (loggedIn !== "true") {
-      router.replace("/login");
-      return;
-    }
+      try {
+        const rows = cityQuery.trim()
+          ? await searchCities(cityQuery.trim())
+          : await listCities();
+        setCities(rows);
+      } catch (err) {
+        setCities([]);
+        setCitiesError(getApiErrorMessage(err));
+      } finally {
+        setCitiesLoading(false);
+      }
+    };
 
-    setIsCheckingAuth(false);
-  }, [router]);
+    const timer = window.setTimeout(() => {
+      void loadCities();
+    }, 250);
 
-  const handleLogout = () => {
-    localStorage.removeItem("globetroter_logged_in");
-    localStorage.removeItem("globetroter_user_email");
+    return () => window.clearTimeout(timer);
+  }, [cityQuery]);
 
-    router.push("/login");
-  };
+  const selectedCity = cities.find((city) => city.id === cityId);
 
-  const handleCreateTrip = () => {
+  const handleCreateTrip = async () => {
+    setError("");
+    setSuccess("");
+
     if (!tripName.trim()) {
-      alert("Please enter a trip name.");
-      return;
-    }
-
-    if (!place.trim()) {
-      alert("Please select a destination.");
+      setError("Please enter a trip name.");
       return;
     }
 
     if (!startDate) {
-      alert("Please select a start date.");
+      setError("Please select a start date.");
       return;
     }
 
     if (!endDate) {
-      alert("Please select an end date.");
+      setError("Please select an end date.");
       return;
     }
 
     if (new Date(endDate) < new Date(startDate)) {
-      alert("End date cannot be before start date.");
+      setError("End date cannot be before start date.");
       return;
     }
 
-    const trip = {
-      tripName,
-      place,
-      startDate,
-      endDate,
-    };
+    setIsSubmitting(true);
 
-    localStorage.setItem(
-      "globetroter_current_trip",
-      JSON.stringify(trip)
-    );
+    try {
+      const trip = await createTrip({
+        title: tripName.trim(),
+        description: selectedCity
+          ? `${selectedCity.name}, ${selectedCity.country}`
+          : null,
+        startDate,
+        endDate,
+      });
 
-    alert("Trip created successfully!");
+      if (cityId) {
+        await createTripStop(trip.id, {
+          cityId,
+          arrivalDate: startDate,
+          departureDate: endDate,
+          stopOrder: 1,
+        });
+      }
 
-    console.log(trip);
+      setSuccess("Trip created successfully.");
+      router.push(`/trips/${trip.id}`);
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const chooseSuggestion = (location: string) => {
-    setPlace(location);
-  };
-
-  if (isCheckingAuth) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f5f9fd]">
-        <div className="text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#079bc2] border-t-transparent" />
-
-          <p className="mt-4 text-sm text-slate-500">
-            Loading your trip planner...
-          </p>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-[#f5f9fd] text-slate-900">
@@ -219,7 +189,7 @@ export default function PlanTripPage() {
           {/* Logout */}
 
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:text-red-500"
           >
             <LogOut className="h-4 w-4" />
@@ -306,7 +276,7 @@ export default function PlanTripPage() {
                 htmlFor="place"
                 className="mb-2 block text-sm font-bold text-slate-800"
               >
-                Select a place
+                Select a city
               </label>
 
               <div className="relative">
@@ -316,15 +286,27 @@ export default function PlanTripPage() {
                 <input
                   id="place"
                   type="text"
-                  value={place}
+                  value={cityQuery}
                   onChange={(event) =>
-                    setPlace(event.target.value)
+                    setCityQuery(event.target.value)
                   }
-                  placeholder="Where do you want to go?"
+                  placeholder="Search cities..."
                   className="h-14 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-12 pr-4 text-sm outline-none transition focus:border-[#079bc2] focus:bg-white focus:ring-4 focus:ring-[#079bc2]/10"
                 />
 
               </div>
+              <select
+                value={cityId}
+                onChange={(event) => setCityId(event.target.value)}
+                className="mt-3 h-12 w-full rounded-2xl border border-slate-200 bg-white px-4 text-sm"
+              >
+                <option value="">Optional first stop</option>
+                {cities.map((city) => (
+                  <option key={city.id} value={city.id}>
+                    {city.name}, {city.country}
+                  </option>
+                ))}
+              </select>
 
             </div>
 
@@ -391,15 +373,29 @@ export default function PlanTripPage() {
           </div>
 
 
+          {error && (
+            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+              {success}
+            </div>
+          )}
+
           {/* Create trip */}
 
           <div className="mt-8 flex justify-end">
 
             <button
-              onClick={handleCreateTrip}
-              className="flex items-center gap-2 rounded-2xl bg-[#079bc2] px-8 py-4 text-sm font-bold text-white shadow-lg shadow-[#079bc2]/20 transition hover:-translate-y-0.5 hover:bg-[#078eaf]"
+              type="button"
+              onClick={() => void handleCreateTrip()}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 rounded-2xl bg-[#079bc2] px-8 py-4 text-sm font-bold text-white shadow-lg shadow-[#079bc2]/20 transition hover:-translate-y-0.5 hover:bg-[#078eaf] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Create trip
+              {isSubmitting ? "Creating trip..." : "Create trip"}
               <ArrowRight className="h-5 w-5" />
             </button>
 
@@ -431,59 +427,69 @@ export default function PlanTripPage() {
             </h2>
 
             <p className="mt-2 text-slate-500">
-              Looking for ideas? Start with one of these destinations.
+              Cities from the catalog. Choose one as your first stop.
             </p>
 
           </div>
 
+          {citiesError && (
+            <p className="mb-4 text-sm font-medium text-red-600">{citiesError}</p>
+          )}
 
-          {/* Cards */}
+          {citiesLoading && (
+            <p className="text-sm text-slate-500">Loading cities...</p>
+          )}
+
+          {!citiesLoading && cities.length === 0 && !citiesError && (
+            <p className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-sm text-slate-500">
+              No cities found. Seed the city catalog on the server if this list is empty.
+            </p>
+          )}
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
-            {suggestions.map((suggestion) => (
+            {cities.map((city) => (
 
               <article
-                key={suggestion.title}
+                key={city.id}
                 className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
               >
 
-                {/* Image */}
+                <div className="relative h-56 overflow-hidden bg-slate-200">
 
-                <div className="relative h-56 overflow-hidden">
-
-                  <img
-                    src={suggestion.image}
-                    alt={suggestion.title}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
+                  {city.image ? (
+                    <img
+                      src={city.image}
+                      alt={city.name}
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                    />
+                  ) : null}
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
 
                   <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1.5 text-xs font-bold text-slate-700 backdrop-blur">
-                    {suggestion.type}
+                    {city.country}
                   </span>
 
                   <p className="absolute bottom-4 left-4 flex items-center gap-2 text-sm font-bold text-white">
                     <MapPin className="h-4 w-4" />
-                    {suggestion.location}
+                    {city.name}
                   </p>
 
                 </div>
 
-
-                {/* Content */}
-
                 <div className="p-5">
 
                   <h3 className="text-lg font-bold text-slate-900">
-                    {suggestion.title}
+                    {city.name}
                   </h3>
 
                   <button
-                    onClick={() =>
-                      chooseSuggestion(suggestion.location)
-                    }
+                    type="button"
+                    onClick={() => {
+                      setCityId(city.id);
+                      setCityQuery(city.name);
+                    }}
                     className="mt-4 flex items-center gap-2 text-sm font-bold text-[#079bc2] transition hover:gap-3"
                   >
                     <Plus className="h-4 w-4" />

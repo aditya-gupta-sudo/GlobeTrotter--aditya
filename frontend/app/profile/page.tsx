@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { RequireAuth } from "@/components/auth/require-auth";
+import { useAuth } from "@/lib/auth-context";
 
 type Trip = {
   id: number;
@@ -66,13 +68,31 @@ const previousTrips: Trip[] = [
 ];
 
 export default function ProfilePage() {
+  return (
+    <RequireAuth>
+      <ProfileContent />
+    </RequireAuth>
+  );
+}
+
+function ProfileContent() {
   const router = useRouter();
+  const { user, logout } = useAuth();
 
   const [editing, setEditing] = useState(false);
 
-  const [name, setName] = useState("Aditya Gupta");
-  const [email, setEmail] = useState("adityagupta86@gmail.com");
-  const [location, setLocation] = useState("Surat, India");
+  const [name, setName] = useState(user?.name ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [location, setLocation] = useState("");
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    setName(user.name);
+    setEmail(user.email);
+  }, [user]);
 
   const handleSave = () => {
     setEditing(false);
@@ -129,12 +149,21 @@ export default function ProfilePage() {
           </nav>
 
           {/* Account */}
-          <button
-            onClick={() => setEditing(true)}
-            className="rounded-full border border-[#08a8df] bg-[#08a8df] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0798ca]"
-          >
-            My account
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setEditing(true)}
+              className="rounded-full border border-[#08a8df] bg-[#08a8df] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0798ca]"
+            >
+              My account
+            </button>
+            <button
+              type="button"
+              onClick={logout}
+              className="rounded-full border border-[#d4e1ed] bg-white px-5 py-2.5 text-sm font-semibold text-[#43566b] transition hover:border-red-200 hover:text-red-500"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
 
@@ -163,11 +192,17 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div className="relative">
                 <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-white/80 bg-white shadow-xl">
-                  <img
-                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=300&q=85"
-                    alt="Profile"
-                    className="h-full w-full object-cover"
-                  />
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-3xl font-extrabold text-[#08a8df]">
+                      {(user?.name ?? "U").charAt(0).toUpperCase()}
+                    </span>
+                  )}
                 </div>
 
                 <div className="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full border-2 border-white bg-[#22c55e]">

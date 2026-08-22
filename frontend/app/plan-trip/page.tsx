@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Compass,
@@ -10,6 +10,10 @@ import {
   LogOut,
   Plus,
 } from "lucide-react";
+import { RequireAuth } from "@/components/auth/require-auth";
+import { getApiErrorMessage } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
+import { createTrip } from "@/lib/trips";
 
 type Suggestion = {
   title: string;
@@ -64,93 +68,71 @@ const suggestions: Suggestion[] = [
 ];
 
 export default function PlanTripPage() {
-  const router = useRouter();
+  return (
+    <RequireAuth>
+      <PlanTripContent />
+    </RequireAuth>
+  );
+}
 
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+function PlanTripContent() {
+  const router = useRouter();
+  const { logout } = useAuth();
 
   const [tripName, setTripName] = useState("");
   const [place, setPlace] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const loggedIn = localStorage.getItem("globetroter_logged_in");
+  const handleCreateTrip = async () => {
+    setError("");
+    setSuccess("");
 
-    if (loggedIn !== "true") {
-      router.replace("/login");
-      return;
-    }
-
-    setIsCheckingAuth(false);
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("globetroter_logged_in");
-    localStorage.removeItem("globetroter_user_email");
-
-    router.push("/login");
-  };
-
-  const handleCreateTrip = () => {
     if (!tripName.trim()) {
-      alert("Please enter a trip name.");
-      return;
-    }
-
-    if (!place.trim()) {
-      alert("Please select a destination.");
+      setError("Please enter a trip name.");
       return;
     }
 
     if (!startDate) {
-      alert("Please select a start date.");
+      setError("Please select a start date.");
       return;
     }
 
     if (!endDate) {
-      alert("Please select an end date.");
+      setError("Please select an end date.");
       return;
     }
 
     if (new Date(endDate) < new Date(startDate)) {
-      alert("End date cannot be before start date.");
+      setError("End date cannot be before start date.");
       return;
     }
 
-    const trip = {
-      tripName,
-      place,
-      startDate,
-      endDate,
-    };
+    setIsSubmitting(true);
 
-    localStorage.setItem(
-      "globetroter_current_trip",
-      JSON.stringify(trip)
-    );
+    try {
+      const trip = await createTrip({
+        title: tripName.trim(),
+        description: place.trim() ? place.trim() : null,
+        startDate,
+        endDate,
+      });
 
-    alert("Trip created successfully!");
-
-    console.log(trip);
+      setSuccess("Trip created successfully.");
+      router.push(`/trips/${trip.id}`);
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const chooseSuggestion = (location: string) => {
     setPlace(location);
   };
-
-  if (isCheckingAuth) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#f5f9fd]">
-        <div className="text-center">
-          <div className="mx-auto h-10 w-10 animate-spin rounded-full border-4 border-[#079bc2] border-t-transparent" />
-
-          <p className="mt-4 text-sm text-slate-500">
-            Loading your trip planner...
-          </p>
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="min-h-screen bg-[#f5f9fd] text-slate-900">
@@ -219,7 +201,7 @@ export default function PlanTripPage() {
           {/* Logout */}
 
           <button
-            onClick={handleLogout}
+            onClick={logout}
             className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-red-200 hover:text-red-500"
           >
             <LogOut className="h-4 w-4" />
@@ -391,15 +373,29 @@ export default function PlanTripPage() {
           </div>
 
 
+          {error && (
+            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+              {success}
+            </div>
+          )}
+
           {/* Create trip */}
 
           <div className="mt-8 flex justify-end">
 
             <button
-              onClick={handleCreateTrip}
-              className="flex items-center gap-2 rounded-2xl bg-[#079bc2] px-8 py-4 text-sm font-bold text-white shadow-lg shadow-[#079bc2]/20 transition hover:-translate-y-0.5 hover:bg-[#078eaf]"
+              type="button"
+              onClick={() => void handleCreateTrip()}
+              disabled={isSubmitting}
+              className="flex items-center gap-2 rounded-2xl bg-[#079bc2] px-8 py-4 text-sm font-bold text-white shadow-lg shadow-[#079bc2]/20 transition hover:-translate-y-0.5 hover:bg-[#078eaf] disabled:cursor-not-allowed disabled:opacity-70"
             >
-              Create trip
+              {isSubmitting ? "Creating trip..." : "Create trip"}
               <ArrowRight className="h-5 w-5" />
             </button>
 

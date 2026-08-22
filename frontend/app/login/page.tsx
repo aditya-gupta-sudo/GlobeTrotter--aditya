@@ -3,6 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { GuestOnly } from "@/components/auth/guest-only";
+import { getApiErrorMessage } from "@/lib/api";
+import { useAuth } from "@/lib/auth-context";
 
 import {
   Compass,
@@ -17,7 +20,16 @@ import {
 } from "lucide-react";
 
 export default function LoginPage() {
+  return (
+    <GuestOnly>
+      <LoginForm />
+    </GuestOnly>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
+  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -25,18 +37,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     setError("");
-
-    /*
-     * Basic frontend validation.
-     *
-     * Later we can replace this with your actual backend
-     * authentication.
-     */
 
     if (!email.trim()) {
       setError("Please enter your email address.");
@@ -48,24 +54,16 @@ export default function LoginPage() {
       return;
     }
 
-    /*
-     * Store login state.
-     *
-     * This allows protected pages such as /plan-trip
-     * to know that the user has logged in.
-     */
-    localStorage.setItem("globetroter_logged_in", "true");
+    setIsSubmitting(true);
 
-    /*
-     * Store the user's email so we can use it later
-     * on the account/dashboard pages.
-     */
-    localStorage.setItem("globetroter_user_email", email);
-
-    /*
-     * Send the user to the Create a New Trip page.
-     */
-    router.push("/plan-trip");
+    try {
+      await login(email.trim(), password);
+      router.replace("/dashboard");
+    } catch (err) {
+      setError(getApiErrorMessage(err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -541,6 +539,7 @@ export default function LoginPage() {
 
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="
                   group
                   flex
@@ -561,10 +560,12 @@ export default function LoginPage() {
                   hover:-translate-y-0.5
                   hover:bg-[#078eaf]
                   hover:shadow-xl
+                  disabled:cursor-not-allowed
+                  disabled:opacity-70
                 "
               >
 
-                Sign in
+                {isSubmitting ? "Signing in..." : "Sign in"}
 
                 <ArrowRight
                   className="

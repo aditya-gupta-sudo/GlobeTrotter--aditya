@@ -7,7 +7,7 @@ const destinations = [
     name: "Japan",
     country: "Asia",
     image:
-      "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=1600&q=85",
+      "https://www.lot.com/content/dam/lot/lot-com/destination-photos/japonia/Tokyo-5%20.coreimg.jpg/1723628368208/Tokyo-5%20.jpg",
   },
   {
     name: "Switzerland",

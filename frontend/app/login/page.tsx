@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import {
   Compass,
   Mail,
@@ -14,8 +16,57 @@ import {
   Sparkles,
 } from "lucide-react";
 
-export default function Home() {
+export default function LoginPage() {
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [error, setError] = useState("");
+
+  const handleLogin = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    setError("");
+
+    /*
+     * Basic frontend validation.
+     *
+     * Later we can replace this with your actual backend
+     * authentication.
+     */
+
+    if (!email.trim()) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    if (!password.trim()) {
+      setError("Please enter your password.");
+      return;
+    }
+
+    /*
+     * Store login state.
+     *
+     * This allows protected pages such as /plan-trip
+     * to know that the user has logged in.
+     */
+    localStorage.setItem("globetroter_logged_in", "true");
+
+    /*
+     * Store the user's email so we can use it later
+     * on the account/dashboard pages.
+     */
+    localStorage.setItem("globetroter_user_email", email);
+
+    /*
+     * Send the user to the Create a New Trip page.
+     */
+    router.push("/plan-trip");
+  };
 
   return (
     <main className="min-h-screen bg-[#f5f9fd]">
@@ -32,6 +83,7 @@ export default function Home() {
               "url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2000&q=95')",
           }}
         >
+
           {/* Main black cinematic overlay */}
           <div className="absolute inset-0 bg-black/30" />
 
@@ -335,7 +387,10 @@ export default function Home() {
                 LOGIN FORM
             =================================================== */}
 
-            <form className="space-y-6">
+            <form
+              onSubmit={handleLogin}
+              className="space-y-6"
+            >
 
               {/* EMAIL */}
 
@@ -355,6 +410,8 @@ export default function Home() {
                   <input
                     id="email"
                     type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     placeholder="you@example.com"
                     className="
                       h-14
@@ -411,6 +468,8 @@ export default function Home() {
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     placeholder="Enter your password"
                     className="
                       h-14
@@ -447,6 +506,11 @@ export default function Home() {
                       transition-colors
                       hover:text-slate-700
                     "
+                    aria-label={
+                      showPassword
+                        ? "Hide password"
+                        : "Show password"
+                    }
                   >
 
                     {showPassword ? (
@@ -460,6 +524,15 @@ export default function Home() {
                 </div>
 
               </div>
+
+
+              {/* ERROR MESSAGE */}
+
+              {error && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
+                  {error}
+                </div>
+              )}
 
 
               {/* =================================================
@@ -577,4 +650,4 @@ export default function Home() {
       </div>
     </main>
   );
-}   
+}
